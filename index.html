@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AI">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<title>AI</title>
+<style>
+:root{--bg:#eef1f6;--ink:#1b2540;--me:#1b2540;--me-t:#fff;--ai:#fff;--line:#d5dbe7;--acc:#2f5bff;--fs:16px}
+@media(prefers-color-scheme:dark){:root{--bg:#141a2b;--ink:#e8ecf6;--me:#2f5bff;--ai:#222b45;--line:#33405f}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:var(--fs)/1.5 -apple-system,"Apple SD Gothic Neo",sans-serif;padding-top:env(safe-area-inset-top)}
+button{font:inherit;color:inherit}
+header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+header .ttl{flex:1;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb{background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:14px}
+#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:85%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-break:break-word}
+.me{align-self:flex-end;background:var(--me);color:var(--me-t);border-bottom-right-radius:4px}
+.ai{align-self:flex-start;background:var(--ai);border:1px solid var(--line);border-bottom-left-radius:4px}
+.empty{margin:auto;text-align:center}
+.chips{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.chips button{border:1px solid var(--line);background:var(--ai);border-radius:12px;padding:10px 14px;text-align:left}
+.cpy{display:block;margin-top:6px;background:none;border:0;padding:0;font-size:12px;opacity:.55}
+.typing{animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.typing{animation:none}}
+form{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;background:var(--ai);color:var(--ink);max-height:120px}
+#s{border:0;border-radius:12px;background:var(--acc);color:#fff;padding:0 18px;font-weight:600}
+#s:disabled{opacity:.5}
+.shade{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:5}
+.panel{position:fixed;top:0;bottom:0;width:min(82vw,320px);background:var(--bg);z-index:6;padding:calc(12px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));overflow-y:auto;transition:transform .2s}
+#drawer{left:0;transform:translateX(-100%);border-right:1px solid var(--line)}
+#sheet{right:0;transform:translateX(100%);border-left:1px solid var(--line)}
+.open{transform:none!important}
+.panel h2{font-size:1.05em;margin:4px 0 12px}
+.item{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line)}
+.item button.pick{flex:1;text-align:left;background:none;border:0;padding:12px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item.cur .pick{font-weight:700;color:var(--acc)}
+.item .del{background:none;border:0;opacity:.5;padding:8px}
+.wide{width:100%;margin-bottom:12px;padding:11px;border-radius:10px;border:0;background:var(--acc);color:#fff;font-weight:600}
+.row{margin:16px 0}
+.row label{display:block;margin-bottom:6px;font-weight:600}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;background:none}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.danger{width:100%;padding:11px;border-radius:10px;border:1px solid #c0392b;color:#c0392b;background:none}
+#st{opacity:.8}
+#bCode{border:1px solid var(--line);background:none;border-radius:12px;padding:0 12px}
+#bCode.on{background:var(--ink);color:var(--bg)}
+#login{position:fixed;inset:0;z-index:20;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px}
+#lf{display:flex;flex-direction:column;gap:10px;width:min(100%,320px);border:0;padding:0}
+#lerr{color:#c0392b;min-height:1.4em;margin:0;text-align:center}
+.code{margin:8px 0;border-radius:10px;overflow:hidden;background:#0f1526;color:#e6ebff;white-space:normal}
+.code .ch{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;font-size:12px;opacity:.85}
+.code .ch button{background:none;border:1px solid #44507a;color:inherit;border-radius:6px;padding:2px 8px;font-size:12px}
+.code pre{margin:0;padding:6px 10px 10px;overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,monospace;white-space:pre}
+input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;background:var(--ai);color:var(--ink)}
+.madd{border:0;border-radius:8px;background:var(--acc);color:#fff;padding:0 14px}
+#bBk,#bRs,#bTr,#bOut{display:none}
+.row:has(#bBk),.row:has(#bTr),.row:has(#bOut){display:none}
+</style></head><body>
+<header>
+  <button class="hb" id="bList" type="button">대화 목록</button>
+  <span class="ttl" id="ttl">AI</span>
+  <button class="hb" id="bSet" type="button">설정</button>
+</header>
+<div id="log"></div>
+<form id="f"><button id="bCode" type="button">코딩</button><textarea id="t" rows="1" placeholder="메시지 입력"></textarea><button id="s">보내기</button></form>
+<div id="login"><h2 style="margin:0">AI</h2>
+  <form id="lf"><input id="pw" type="password" autocomplete="current-password" placeholder="비밀번호"><button class="wide" type="submit">로그인</button></form>
+  <p id="lerr"></p></div>
+<div class="shade" id="shade"></div>
+<aside class="panel" id="drawer"><button class="wide" id="bNew" type="button">새 대화</button><h2>대화 목록</h2><div id="list"></div></aside>
+<aside class="panel" id="sheet">
+  <h2>설정</h2>
+  <div class="row"><label>서버 상태</label><div id="st">확인 중...</div></div>
+  <div class="row"><label>글자 크기</label><div class="seg" id="sizes"><button data-v="14" type="button">작게</button><button data-v="16" type="button">보통</button><button data-v="19" type="button">크게</button></div></div>
+  <div class="row"><label>기억</label><div id="mem"></div><div style="display:flex;gap:6px;margin-top:8px"><input id="mi" placeholder="기억할 내용"><button class="madd" id="mAdd" type="button">추가</button></div></div>
+  <div class="row"><label>대화 백업</label><div class="seg"><button id="bBk" type="button">서버에 백업</button><button id="bRs" type="button">복원</button></div><div id="bkst" style="opacity:.7;margin-top:6px"></div></div>
+  <div class="row"><label>학습 데이터</label><button class="wide" id="bTr" type="button" style="margin-bottom:6px">대화를 학습 글로 내보내기</button><div id="trst" style="opacity:.7"></div></div>
+  <div class="row"><button class="wide" id="bOut" type="button">로그아웃</button></div>
+  <div class="row"><button class="danger" id="bAll" type="button">모든 대화 삭제</button></div>
+</aside>
+<script>
+(function(){
+const J=(o,s=200)=>new Response(JSON.stringify(o),{status:s,headers:{"Content-Type":"application/json"}});
+const ls={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function calc(t){
+ const cand=t.replace(/[^\d.+\-*\/()%×÷^\s]/g,"").trim(),rest=t.replace(/[\d.+\-*\/()%×÷^\s]/g,"");
+ if(!/\d/.test(cand)||!/[+\-*\/%×÷^]/.test(cand))return null;
+ if(rest&&(rest.length>20||!/계산|얼마|결과|답|=|\?/.test(rest)))return null;
+ const s=cand.replace(/\s+/g,"").replace(/×/g,"*").replace(/÷/g,"/");let i=0;
+ function num(){const m=/^(\d+(\.\d+)?|\.\d+)/.exec(s.slice(i));if(!m)throw 0;i+=m[0].length;return parseFloat(m[0])}
+ function atom(){if(s[i]==="("){i++;const v=expr();if(s[i]!==")")throw 0;i++;return v}if(s[i]==="-"){i++;return -atom()}if(s[i]==="+"){i++;return atom()}return num()}
+ function pow(){let b=atom();while(s[i]==="^"){i++;const e=atom();if(Math.abs(e)>100||Math.abs(b)>1e6)throw 0;b=Math.pow(b,e)}return b}
+ function term(){let v=pow();while(i<s.length&&"*/%".includes(s[i])){const o=s[i++];const r=pow();v=o==="*"?v*r:o==="/"?v/r:v%r}return v}
+ function expr(){let v=term();while(s[i]==="+"||s[i]==="-"){const o=s[i++];const r=term();v=o==="+"?v+r:v-r}return v}
+ try{const v=expr();if(i!==s.length||!isFinite(v))return null;return "계산 결과: "+cand+" = "+(Math.round(v*1e10)/1e10)}catch(e){return null}}
+function grams(s){s=s.replace(/\s+/g,"").toLowerCase();const g=new Set();for(let i=0;i<s.length-1;i++)g.add(s.slice(i,i+2));if(!g.size&&s)g.add(s);return g}
+function related(q){const a=grams(q);return Math.min(3,ls.get("tg_mem",[]).filter(it=>{let n=0;grams(it.text).forEach(x=>{if(a.has(x))n++});return n>=2}).length)}
+function addMem(text){const t=(text||"").trim().slice(0,500);if(!t)return null;const L=ls.get("tg_mem",[]);let it=L.find(x=>x.text===t);if(!it){it={id:String(Date.now()),text:t};L.push(it);ls.set("tg_mem",L.slice(-200))}return it}
+function chat(msgs,mode){
+ const last=(msgs[msgs.length-1]||{}).content||"";
+ const m=/^\s*기억해\s*[:,]?\s*([\s\S]+)$/.exec(last);
+ if(m){const it=addMem(m[1]);return it?"기억해 둘게요: "+it.text:"기억할 내용이 비어 있어요."}
+ const c=calc(last);if(c)return c;
+ const coding=mode==="code"||/코드|코딩|함수|버그|파이썬|python|javascript/i.test(last);
+ const n=related(last);
+ let out="[임시 응답] 받은 메시지: "+last+(n?" (기억 "+n+"개 참고)":"");
+ if(coding)out+="\n\n```python\n# 실제 모델이 연결되면 여기에 코드가 나와요\nprint(\"hello\")\n```";
+ return out}
+const realFetch=window.fetch.bind(window);
+window.fetch=async(url,opt)=>{
+ opt=opt||{};
+ if(typeof url!=="string"||!url.startsWith("/api/"))return realFetch(url,opt);
+ const m=(opt.method||"GET").toUpperCase();let body={};try{body=JSON.parse(opt.body||"{}")}catch(e){}
+ await new Promise(r=>setTimeout(r,300));
+ if(url==="/api/health")return J({ok:true,authed:true,backend:"폰 단독 모드(서버 없음)"});
+ if(url==="/api/login"||url==="/api/logout")return J({ok:true});
+ if(url==="/api/chat")return J({reply:chat(body.messages||[],body.mode)});
+ if(url==="/api/memory"&&m==="GET")return J({items:ls.get("tg_mem",[])});
+ if(url==="/api/memory"&&m==="POST"){const it=addMem(body.text);return it?J({item:it}):J({error:"내용이 비어 있어요"},400)}
+ if(url.startsWith("/api/memory/")&&m==="DELETE"){const id=url.split("/").pop();ls.set("tg_mem",ls.get("tg_mem",[]).filter(x=>x.id!==id));return J({ok:true})}
+ if(url==="/api/backup"&&m==="POST"){ls.set("tg_bk",{saved_at:Math.floor(Date.now()/1000),chats:body.chats||[]});return J({ok:true})}
+ if(url==="/api/backup")return J(ls.get("tg_bk",{chats:null}));
+ return J({error:"폰 단독 모드에서는 지원하지 않아요"},400)}
+})();
+
+</script>
+<script>
+const $=id=>document.getElementById(id);
+let S={chats:[],cur:null,size:16,code:false};
+try{Object.assign(S,JSON.parse(localStorage.getItem("tg_v2")||"{}"))}catch(e){}
+try{const o=JSON.parse(localStorage.getItem("tg_msgs")||"[]");
+  if(o.length&&!S.chats.length){const c=mk();c.msgs=o;c.title=o[0].content.slice(0,20);S.chats.push(c);S.cur=c.id}}catch(e){}
+function mk(){return{id:String(Date.now()),title:"새 대화",msgs:[]}}
+function cur(){return S.chats.find(c=>c.id===S.cur)}
+function save(){try{localStorage.setItem("tg_v2",JSON.stringify(S))}catch(e){}}
+function fill(d,text){d.textContent="";
+  const re=/```([\w+-]*)[ \t]*\n?([\s\S]*?)```/g;let last=0,m;
+  const add=s=>{if(s)d.appendChild(document.createTextNode(s))};
+  while((m=re.exec(text))){add(text.slice(last,m.index));
+    const w=document.createElement("div");w.className="code";
+    const h=document.createElement("div");h.className="ch";
+    const l=document.createElement("span");l.textContent=m[1]||"코드";
+    const b=document.createElement("button");b.type="button";b.textContent="복사";
+    const code=m[2].replace(/\n$/,"");b.onclick=()=>copy(code,b);
+    h.append(l,b);const pre=document.createElement("pre");pre.textContent=code;
+    w.append(h,pre);d.appendChild(w);last=re.lastIndex}
+  add(text.slice(last))}
+function copy(t,b){const done=()=>{b.textContent="복사됨";setTimeout(()=>b.textContent="복사",1200)};
+  function fb(){const a=document.createElement("textarea");a.value=t;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();a.setSelectionRange(0,t.length);try{document.execCommand("copy");done()}catch(e){}a.remove()}
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(done,fb)}else fb()}
+function grow(){const t=$("t");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,120)+"px"}
+$("t").oninput=grow;
+function addCopy(d,text){const b=document.createElement("button");b.type="button";b.className="cpy";b.textContent="복사";b.onclick=()=>copy(text,b);d.appendChild(b)}
+function bubble(role,text){const d=document.createElement("div");d.className="m "+(role==="user"?"me":"ai");fill(d,text);if(role!=="user"&&text!=="...")addCopy(d,text);$("log").appendChild(d);$("log").scrollTop=1e9;return d}
+function render(){
+  const c=cur(),log=$("log");log.innerHTML="";
+  $("ttl").textContent=c?c.title:"AI";
+  if(!c||!c.msgs.length){log.innerHTML='<div class="empty"><div style="opacity:.6">무엇을 도와드릴까요?<br>아래를 눌러 시작해 보세요.</div><div class="chips" id="chips"></div></div>';
+    ["12*(3+4) 계산해줘","파이썬으로 hello 출력하는 코드 알려줘","이 코드 보안 점검해줘","기억해 나는 아이폰을 써"].forEach(q=>{
+      const b=document.createElement("button");b.type="button";b.textContent=q;
+      b.onclick=()=>{$("t").value=q;$("t").focus();grow()};$("chips").appendChild(b)});return}
+  c.msgs.forEach(m=>bubble(m.role,m.content));
+}
+function renderList(){
+  const L=$("list");L.innerHTML="";
+  if(!S.chats.length){L.innerHTML='<div class="empty" style="padding:20px 0;opacity:.6">저장된 대화가 없어요</div>';return}
+  [...S.chats].reverse().forEach(c=>{
+    const r=document.createElement("div");r.className="item"+(c.id===S.cur?" cur":"");
+    const p=document.createElement("button");p.className="pick";p.type="button";p.textContent=c.title;
+    p.onclick=()=>{S.cur=c.id;save();render();closeAll()};
+    const d=document.createElement("button");d.className="del";d.type="button";d.textContent="삭제";
+    d.onclick=()=>{if(!confirm("이 대화를 삭제할까요?"))return;S.chats=S.chats.filter(x=>x.id!==c.id);if(S.cur===c.id)S.cur=null;save();render();renderList()};
+    r.append(p,d);L.appendChild(r);
+  });
+}
+function closeAll(){["drawer","sheet"].forEach(i=>$(i).classList.remove("open"));$("shade").style.display="none"}
+function openP(id){$(id).classList.add("open");$("shade").style.display="block"}
+$("shade").onclick=closeAll;
+$("bList").onclick=()=>{renderList();openP("drawer")};
+$("bNew").onclick=()=>{S.cur=null;save();render();closeAll()};
+$("bSet").onclick=async()=>{openP("sheet");loadMem();$("st").textContent="확인 중...";
+  try{const j=await(await api("/api/health")).json();$("st").textContent="연결됨 (모드: "+j.backend+")"}
+  catch(e){$("st").textContent="연결 안 됨. 서버가 켜져 있는지 확인하세요."}};
+function applySize(){document.documentElement.style.setProperty("--fs",S.size+"px");
+  document.querySelectorAll("#sizes button").forEach(b=>b.classList.toggle("on",+b.dataset.v===S.size))}
+document.querySelectorAll("#sizes button").forEach(b=>b.onclick=()=>{S.size=+b.dataset.v;save();applySize()});
+$("bAll").onclick=()=>{if(!confirm("모든 대화를 삭제할까요? 되돌릴 수 없어요."))return;S.chats=[];S.cur=null;save();render();closeAll()};
+$("f").onsubmit=async e=>{
+  e.preventDefault();const text=$("t").value.trim();if(!text)return;
+  let c=cur();if(!c){c=mk();S.chats.push(c);S.cur=c.id}
+  if(!c.msgs.length){c.title=text.slice(0,20);$("log").innerHTML=""}
+  c.msgs.push({role:"user",content:text});save();$("ttl").textContent=c.title;
+  bubble("user",text);$("t").value="";grow();$("s").disabled=true;
+  const wait=bubble("assistant","...");wait.classList.add("typing");
+  try{
+    const r=await api("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:c.msgs,mode:S.code?"code":"auto"})});
+    const j=await r.json();if(!r.ok)throw new Error(j.error||"서버 오류");
+    c.msgs.push({role:"assistant",content:j.reply});save();
+    if(cur()===c){fill(wait,j.reply);addCopy(wait,j.reply)}
+  }catch(err){if(cur()===c){wait.textContent="오류: "+err.message+" (서버가 켜져 있는지 확인하세요)";
+    const r=document.createElement("button");r.type="button";r.className="cpy";r.style.opacity=1;r.textContent="다시 시도";
+    r.onclick=()=>{c.msgs.pop();save();render();$("t").value=text;grow();$("f").dispatchEvent(new Event("submit",{cancelable:true}))};
+    wait.appendChild(r)}}
+  wait.classList.remove("typing");$("s").disabled=false;
+};
+async function loadMem(){const M=$("mem");
+  try{const j=await(await api("/api/memory")).json();M.innerHTML="";
+    if(!j.items.length){M.innerHTML='<div style="opacity:.6">저장된 기억이 없어요. 채팅에서 "기억해 ..."라고 말해도 저장돼요.</div>';return}
+    j.items.forEach(it=>{const r=document.createElement("div");r.className="item";
+      const p=document.createElement("span");p.style.cssText="flex:1;padding:8px 4px";p.textContent=it.text;
+      const d=document.createElement("button");d.className="del";d.type="button";d.textContent="삭제";
+      d.onclick=async()=>{await api("/api/memory/"+it.id,{method:"DELETE"});loadMem()};
+      r.append(p,d);M.appendChild(r)})}
+  catch(e){M.textContent="불러오지 못했어요"}}
+$("mAdd").onclick=async()=>{const v=$("mi").value.trim();if(!v)return;
+  try{await api("/api/memory",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:v})});$("mi").value="";loadMem()}catch(e){}};
+async function api(url,opt){const r=await fetch(url,opt);if(r.status===401){showLogin();throw new Error("로그인이 필요해요")}return r}
+function showLogin(){closeAll();$("login").style.display="flex";$("lerr").textContent="";setTimeout(()=>$("pw").focus(),50)}
+$("lf").onsubmit=async e=>{e.preventDefault();const pw=$("pw").value;if(!pw)return;
+  try{const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:pw})});
+    const j=await r.json();if(!r.ok){$("lerr").textContent=j.error||"로그인 실패";return}
+    $("pw").value="";$("login").style.display="none"}
+  catch(err){$("lerr").textContent="서버에 연결할 수 없어요"}};
+$("bOut").onclick=async()=>{try{await fetch("/api/logout",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"})}catch(e){}showLogin()};
+fetch("/api/health").then(r=>r.json()).then(j=>{if(!j.authed)showLogin()}).catch(()=>{});
+const JH={"Content-Type":"application/json"};
+async function post(url,obj){const r=await api(url,{method:"POST",headers:JH,body:JSON.stringify(obj)});const j=await r.json();if(!r.ok)throw new Error(j.error||"서버 오류");return j}
+$("bBk").onclick=async()=>{try{await post("/api/backup",{chats:S.chats});$("bkst").textContent="백업했어요 ("+S.chats.length+"개 대화)"}catch(e){$("bkst").textContent="백업 실패: "+e.message}};
+$("bRs").onclick=async()=>{try{const j=await(await api("/api/backup")).json();
+  if(!j.chats){$("bkst").textContent="저장된 백업이 없어요";return}
+  if(!confirm(new Date(j.saved_at*1000).toLocaleString("ko-KR")+"에 저장한 백업("+j.chats.length+"개 대화)으로 현재 대화를 바꿀까요?"))return;
+  S.chats=j.chats;S.cur=null;save();render();$("bkst").textContent="복원했어요"}catch(e){$("bkst").textContent="복원 실패: "+e.message}};
+$("bTr").onclick=async()=>{try{const j=await post("/api/export-training",{chats:S.chats});
+  $("trst").textContent=j.count?j.count+"쌍을 서버의 train_data/app_chats.txt에 저장했어요":"쓸 수 있는 대화가 없어요 (임시 응답과 오류는 제외돼요)"}catch(e){$("trst").textContent="실패: "+e.message}};
+$("bCode").classList.toggle("on",!!S.code);
+$("bCode").onclick=()=>{S.code=!S.code;save();$("bCode").classList.toggle("on",S.code)};
+applySize();render();
+</script><script>if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));</script>
+</body></html>
