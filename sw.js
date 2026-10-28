@@ -1,5 +1,5 @@
 // 앱 파일을 폰에 저장해 두고, 인터넷이 없어도 열리게 한다. (https 주소에서만 동작)
-const V = "ai-v2";
+const V = "ai-v3";
 const FILES = ["./", "./index.html", "./manifest.json", "./apple-touch-icon.png", "./icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
