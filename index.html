@@ -14,8 +14,9 @@
 html[data-theme=light]{--bg:#fbf3f1;--card:#fff;--line:#eadbd8;--ink:#2a1830;--mut:#8a6f80;--ai:#fff;--bad:#d6335a;--acc-x:#0e8a9c;color-scheme:light}
 @media(prefers-color-scheme:light){html[data-theme=auto]{--bg:#fbf3f1;--card:#fff;--line:#eadbd8;--ink:#2a1830;--mut:#8a6f80;--ai:#fff;--bad:#d6335a;--acc-x:#0e8a9c;color-scheme:light}}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg)}
-body{display:flex;flex-direction:column;color:var(--ink);font:var(--fs)/1.5 -apple-system,"Apple SD Gothic Neo",sans-serif;padding-top:env(safe-area-inset-top);-webkit-text-size-adjust:100%}
+html,body{margin:0;background:var(--bg)}
+html{height:100%}
+body{position:fixed;top:0;left:0;right:0;bottom:0;overflow:hidden;display:flex;flex-direction:column;color:var(--ink);font:var(--fs)/1.5 -apple-system,"Apple SD Gothic Neo",sans-serif;padding-top:env(safe-area-inset-top);-webkit-text-size-adjust:100%}
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#150e19;z-index:60}
 button{font:inherit;color:inherit}
 #views{flex:1;position:relative;min-height:0}
