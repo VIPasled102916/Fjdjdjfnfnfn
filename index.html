@@ -45,9 +45,11 @@ button{font:inherit;color:inherit}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .grid button{background:var(--card);border:0;border-radius:16px;padding:18px 14px;text-align:left}
 .grid small{display:block;color:var(--mut);margin-top:4px}
-nav#tabs{display:flex;border-top:1px solid var(--line);background:var(--card);padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
-nav#tabs button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72em;color:var(--mut)}
+nav#tabs{display:flex;border-top:1px solid var(--line);background:var(--card);padding:0}
+html.gapfix{background:var(--card)}
+nav#tabs button{flex:1;padding:8px 0 calc(8px + env(safe-area-inset-bottom));background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72em;color:var(--mut)}
 nav#tabs button.on{color:var(--acc-x)}
+html.gapfix nav#tabs button{padding-bottom:10px}
 nav#tabs svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .bar .ttl{flex:1;text-align:center;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -89,8 +91,6 @@ input.tx{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padd
 .ph button{background:none;border:0;font-size:2em;line-height:1;padding:0 12px}
 .ph b{flex:1;text-align:center;margin-right:44px}
 .pb{flex:1;overflow-y:auto;padding:8px 16px calc(24px + env(safe-area-inset-bottom))}
-#fitbar{display:none;position:fixed;top:calc(env(safe-area-inset-top) + 8px);left:12px;right:12px;z-index:80;background:var(--card);border:1px solid var(--acc);border-radius:14px;padding:10px 12px;gap:8px;align-items:center;font-size:.9em}
-#fitbar span{flex:1}
 #login{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px}
 #lf{display:flex;flex-direction:column;gap:10px;width:min(100%,320px)}
 #lerr{color:var(--bad);min-height:1.4em;margin:0;text-align:center}
@@ -107,7 +107,6 @@ input.tx{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padd
 </div>
 <nav id="tabs"></nav>
 <div id="pages"></div>
-<div id="fitbar"><span>화면 아래 빈 띠가 없어졌나요? 탭 바가 맨 아래에 붙어 있으면 [유지]를 눌러요.</span><button class="ib" id="fitOk" type="button">유지</button><button class="ib" id="fitOff" type="button">끄기</button></div>
 <div id="login"><h2 style="margin:0" id="lname"></h2>
   <form id="lf"><input class="tx" id="pw" type="password" autocomplete="current-password" placeholder="비밀번호"><button class="wide" type="submit">로그인</button></form>
   <p id="lerr"></p></div>
@@ -162,13 +161,13 @@ window.fetch=async(url,opt)=>{
 <script>
 const $=id=>document.getElementById(id);
 const APP="AI";
-const APP_VER="0.17";
+const APP_VER="0.18";
 const JH={"Content-Type":"application/json"};
 const THEME={dark:"다크 모드",light:"라이트 모드",auto:"시스템 설정"};
 const SEC="이 코드 보안 점검해줘\n```python\n\n```";
 function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 /* ---- 저장된 데이터 ---- */
-let S={chats:[],cur:null},ST={theme:"dark",size:16,formal:true,direct:true,memory:true,autosave:true,code:false};
+let S={chats:[],cur:null},ST={theme:"dark",size:16,formal:true,direct:true,memory:true,autosave:true,code:false,gapfit:true};
 let MODE="server",STAT=null,tab="home";
 try{const o=JSON.parse(localStorage.getItem("tg_v2")||"{}");if(Array.isArray(o.chats))S.chats=o.chats;S.cur=o.cur||null;if(o.size)ST.size=o.size;if(o.code)ST.code=true}catch(e){}
 try{Object.assign(ST,JSON.parse(localStorage.getItem("tg_set")||"{}"))}catch(e){}
@@ -257,11 +256,8 @@ function buildTone(b){b.appendChild(el("div","sec","말투"));b.appendChild(segC
   b.appendChild(el("div","note","실제 AI 모델(Ollama 등)이 연결되면 답변에 반영돼요. 지금의 임시 응답에는 적용되지 않아요."))}
 function buildDisplay(b){b.appendChild(el("div","sec","테마"));b.appendChild(segCard([["dark","다크"],["light","라이트"],["auto","시스템"]],ST.theme,v=>{ST.theme=v;saveST();applyLook()}));
   b.appendChild(el("div","sec","글자 크기"));b.appendChild(segCard([[14,"작게"],[16,"보통"],[19,"크게"]],ST.size,v=>{ST.size=v;saveST();applyLook()}));
-  b.appendChild(el("div","sec","화면"));
-  const r=el("div","row"),i=document.createElement("input");r.appendChild(el("span","lb","화면 높이 보정"));i.type="checkbox";i.className="sw";i.checked=ST.fit==="on"||ST.fit==="trial";
-  i.onchange=()=>{if(i.checked){ST.fit="trial";$("fitbar").style.display="flex"}else{ST.fit="off";$("fitbar").style.display="none"}saveST();applyFit()};
-  r.appendChild(i);b.appendChild(group([r]));
-  b.appendChild(el("div","note","홈 화면 앱에서 탭 바 아래에 빈 띠가 남을 때 켜세요. 켠 뒤 위에 뜨는 [유지]를 눌러야 저장돼요. 탭 바가 사라지면 앱을 완전히 종료했다 다시 켜세요. 자동으로 꺼져요."))}
+  b.appendChild(el("div","sec","화면"));b.appendChild(group([toggle("아래 여백 맞춤","gapfit",applyGap)]));
+  b.appendChild(el("div","note","홈 화면 앱에서 탭 바 아래에 빈 띠가 생길 때 색을 맞춰 한 덩어리로 보이게 해요."))}
 function buildData(b){const st=el("div","note"),ph=MODE==="phone";
   b.appendChild(group([row("저장된 대화",S.chats.length+"개"),
     row("모든 대화 삭제","",()=>{if(!confirm("모든 대화를 삭제할까요? 되돌릴 수 없어요."))return;S.chats=[];S.cur=null;save();rebuild()},{danger:true}),
@@ -336,22 +332,16 @@ $("f").onsubmit=async e=>{
     r.onclick=()=>{c.msgs.pop();save();render();$("t").value=text;grow();$("f").dispatchEvent(new Event("submit",{cancelable:true}))};wait.appendChild(r)}}
   wait.classList.remove("typing");$("s").disabled=false;
 };
-/* ---- 화면 높이 보정 (홈 화면 앱에서 아래가 비는 문제) ---- */
+/* ---- 아래 빈 띠 맞춤 (홈 화면 앱에서 보이는 영역이 화면보다 짧을 때) ---- */
 const STANDALONE=navigator.standalone===true||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches);
 function fullH(){return Math.max(screen.height,screen.width)}
 function needFit(){return STANDALONE&&innerHeight>innerWidth&&innerHeight<fullH()-20}
-function applyFit(){document.body.style.height=((ST.fit==="on"||ST.fit==="trial")&&needFit())?fullH()+"px":""}
-function startFit(){
-  if(ST.fit==="trial"){ST.fit="off";saveST()}            /* 지난 시험을 [유지]로 확인하지 않았으면 안전하게 끈다 */
-  else if(ST.fit==null&&needFit()){ST.fit="trial";saveST();$("fitbar").style.display="flex"}
-  applyFit()}
-$("fitOk").onclick=()=>{ST.fit="on";saveST();$("fitbar").style.display="none"};
-$("fitOff").onclick=()=>{ST.fit="off";saveST();$("fitbar").style.display="none";applyFit()};
-addEventListener("resize",applyFit);
+function applyGap(){document.documentElement.classList.toggle("gapfix",ST.gapfit!==false&&needFit())}
+addEventListener("resize",applyGap);
 function diag(){const t=el("div");t.style.cssText="position:absolute;visibility:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)";document.body.appendChild(t);const c=getComputedStyle(t),s=c.paddingTop+"/"+c.paddingBottom;t.remove();
-  return"화면 "+screen.width+"×"+screen.height+" · 영역 "+innerWidth+"×"+innerHeight+" · 안전영역 "+s+" · "+(STANDALONE?"앱":"브라우저")+" · 보정 "+(ST.fit||"-")}
+  return"화면 "+screen.width+"×"+screen.height+" · 영역 "+innerWidth+"×"+innerHeight+" · 안전영역 "+s+" · "+(STANDALONE?"앱":"브라우저")+" · 여백맞춤 "+(document.documentElement.classList.contains("gapfix")?"켜짐":"꺼짐")}
 /* ---- 시작 ---- */
-applyLook();syncCode();go("home");startFit();
+applyLook();syncCode();go("home");applyGap();
 fetch("/api/health").then(r=>r.json()).then(j=>{if(!j.authed)showLogin();else loadStatus()}).catch(()=>{STAT=null;refresh()});
 </script><script>if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));</script>
 </body></html>
