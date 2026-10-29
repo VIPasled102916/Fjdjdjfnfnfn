@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="AI">
 <meta name="theme-color" content="#150e19">
 <link rel="manifest" href="./manifest.json">
@@ -46,7 +46,7 @@ button{font:inherit;color:inherit}
 .grid button{background:var(--card);border:0;border-radius:16px;padding:18px 14px;text-align:left}
 .grid small{display:block;color:var(--mut);margin-top:4px}
 nav#tabs{display:flex;border-top:1px solid var(--line);background:var(--card);padding:0}
-html.gapfix{background:var(--card)}
+html.gapfix nav#tabs{background:#150e19}
 nav#tabs button{flex:1;padding:8px 0 calc(8px + env(safe-area-inset-bottom));background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72em;color:var(--mut)}
 nav#tabs button.on{color:var(--acc-x)}
 html.gapfix nav#tabs button{padding-bottom:10px}
@@ -161,7 +161,7 @@ window.fetch=async(url,opt)=>{
 <script>
 const $=id=>document.getElementById(id);
 const APP="AI";
-const APP_VER="0.18";
+const APP_VER="0.19";
 const JH={"Content-Type":"application/json"};
 const THEME={dark:"다크 모드",light:"라이트 모드",auto:"시스템 설정"};
 const SEC="이 코드 보안 점검해줘\n```python\n\n```";
@@ -339,7 +339,7 @@ function needFit(){return STANDALONE&&innerHeight>innerWidth&&innerHeight<fullH(
 function applyGap(){document.documentElement.classList.toggle("gapfix",ST.gapfit!==false&&needFit())}
 addEventListener("resize",applyGap);
 function diag(){const t=el("div");t.style.cssText="position:absolute;visibility:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)";document.body.appendChild(t);const c=getComputedStyle(t),s=c.paddingTop+"/"+c.paddingBottom;t.remove();
-  return"화면 "+screen.width+"×"+screen.height+" · 영역 "+innerWidth+"×"+innerHeight+" · 안전영역 "+s+" · "+(STANDALONE?"앱":"브라우저")+" · 여백맞춤 "+(document.documentElement.classList.contains("gapfix")?"켜짐":"꺼짐")}
+  return"화면 "+screen.width+"×"+screen.height+" · 영역 "+innerWidth+"×"+innerHeight+" · 뷰포트 "+(window.visualViewport?Math.round(visualViewport.height):"-")+" · 문서 "+document.documentElement.clientHeight+" · 안전영역 "+s+" · "+(STANDALONE?"앱":"브라우저")+" · 여백맞춤 "+(document.documentElement.classList.contains("gapfix")?"켜짐":"꺼짐")}
 /* ---- 시작 ---- */
 applyLook();syncCode();go("home");applyGap();
 fetch("/api/health").then(r=>r.json()).then(j=>{if(!j.authed)showLogin();else loadStatus()}).catch(()=>{STAT=null;refresh()});
