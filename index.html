@@ -49,7 +49,7 @@ nav#tabs{display:flex;border-top:1px solid var(--line);background:var(--card);pa
 html.gapfix nav#tabs{background:#150e19}
 nav#tabs button{flex:1;padding:8px 0 calc(8px + env(safe-area-inset-bottom));background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72em;color:var(--mut)}
 nav#tabs button.on{color:var(--acc-x)}
-html.gapfix nav#tabs button{padding:6px 0 2px}
+html.gapfix nav#tabs button{padding:6px 0 var(--tabpad,10px)}
 nav#tabs svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .bar .ttl{flex:1;text-align:center;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -167,13 +167,13 @@ window.fetch=async(url,opt)=>{
 <script>
 const $=id=>document.getElementById(id);
 const APP="AI";
-const APP_VER="0.20";
+const APP_VER="0.21";
 const JH={"Content-Type":"application/json"};
 const THEME={dark:"다크 모드",light:"라이트 모드",auto:"시스템 설정"};
 const SEC="이 코드 보안 점검해줘\n```python\n\n```";
 function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 /* ---- 저장된 데이터 ---- */
-let S={chats:[],cur:null},ST={theme:"dark",size:16,formal:true,direct:true,memory:true,autosave:true,code:false,gapfit:true};
+let S={chats:[],cur:null},ST={theme:"dark",size:16,formal:true,direct:true,memory:true,autosave:true,code:false,gapfit:true,tabpad:10};
 let MODE="server",STAT=null,tab="home";
 try{const o=JSON.parse(localStorage.getItem("tg_v2")||"{}");if(Array.isArray(o.chats))S.chats=o.chats;S.cur=o.cur||null;if(o.size)ST.size=o.size;if(o.code)ST.code=true}catch(e){}
 try{Object.assign(ST,JSON.parse(localStorage.getItem("tg_set")||"{}"))}catch(e){}
@@ -182,7 +182,7 @@ function saveST(){try{localStorage.setItem("tg_set",JSON.stringify(ST))}catch(e)
 function mk(){return{id:String(Date.now()),title:"새 대화",msgs:[]}}
 function cur(){return S.chats.find(c=>c.id===S.cur)}
 function newChat(){S.cur=null;save()}
-function applyLook(){document.documentElement.dataset.theme=ST.theme;document.documentElement.style.setProperty("--fs",ST.size+"px")}
+function applyLook(){document.documentElement.dataset.theme=ST.theme;document.documentElement.style.setProperty("--tabpad",(ST.tabpad==null?10:ST.tabpad)+"px");document.documentElement.style.setProperty("--fs",ST.size+"px")}
 function toneText(){return(ST.formal?"존댓말":"반말")+", "+(ST.direct?"직설적으로":"친절하게")}
 function toneShort(){return(ST.formal?"존댓말":"반말")+" / "+(ST.direct?"직설적":"친절")}
 function fmt(n){return n>=1e9?(n/1e9).toFixed(1)+"GB":n>=1e6?(n/1e6).toFixed(1)+"MB":Math.round(n/1e3)+"KB"}
@@ -264,6 +264,7 @@ function buildDisplay(b){b.appendChild(el("div","sec","테마"));b.appendChild(s
   b.appendChild(el("div","sec","글자 크기"));b.appendChild(segCard([[14,"작게"],[16,"보통"],[19,"크게"]],ST.size,v=>{ST.size=v;saveST();applyLook()}));
   b.appendChild(el("div","sec","화면"));b.appendChild(group([toggle("아래 여백 맞춤","gapfit",applyGap)]));
   b.appendChild(el("div","note","홈 화면 앱에서 탭 바 아래에 빈 띠가 생길 때 색을 맞춰 한 덩어리로 보이게 해요."));
+  b.appendChild(el("div","sec","탭 바 위치"));b.appendChild(segCard([[2,"낮게"],[10,"보통"],[18,"높게"]],ST.tabpad==null?10:ST.tabpad,v=>{ST.tabpad=v;saveST();applyLook()}));
   b.appendChild(group([row("화면 진단 (터치 테스트)","",openProbe)]))}
 function buildData(b){const st=el("div","note"),ph=MODE==="phone";
   b.appendChild(group([row("저장된 대화",S.chats.length+"개"),
