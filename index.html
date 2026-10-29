@@ -52,11 +52,11 @@ nav#tabs svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1
 .bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .bar .ttl{flex:1;text-align:center;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ib{background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:14px}
-#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
-.m{max-width:85%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-break:break-word}
+#log{flex:1;overflow-y:auto;padding:14px 8px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:94%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-break:break-word}
 .me{align-self:flex-end;background:var(--acc);color:var(--acc-t);border-bottom-right-radius:4px}
 .ai{align-self:flex-start;background:var(--ai);border:1px solid var(--line);border-bottom-left-radius:4px}
-.empty{margin:auto;text-align:center}
+.empty{margin:auto;text-align:center;width:100%;padding:0 4px}
 .chips{display:flex;flex-direction:column;gap:8px;margin-top:16px}
 .chips button{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 14px;text-align:left}
 .cpy{display:block;margin-top:6px;background:none;border:0;padding:0;font-size:12px;opacity:.55}
@@ -159,6 +159,7 @@ window.fetch=async(url,opt)=>{
 <script>
 const $=id=>document.getElementById(id);
 const APP="AI";
+const APP_VER="0.16";
 const JH={"Content-Type":"application/json"};
 const THEME={dark:"다크 모드",light:"라이트 모드",auto:"시스템 설정"};
 const SEC="이 코드 보안 점검해줘\n```python\n\n```";
@@ -231,7 +232,8 @@ function renderSet(){const v=$("v-set");v.innerHTML="";v.appendChild(el("h1","h"
   v.appendChild(group([row("모델 선택",m.label,()=>openPage("모델 상태",buildModel)),row("말투 설정",toneShort(),()=>openPage("말투 설정",buildTone)),toggle("기억 기능","memory"),toggle("자동 저장","autosave",()=>{if(ST.autosave)save()})]));
   v.appendChild(el("div","sec","앱 설정"));
   v.appendChild(group([row("알림 설정","준비 중"),row("테마",THEME[ST.theme],()=>openPage("화면 설정",buildDisplay)),row("언어","한국어"),row("데이터 관리","",()=>openPage("데이터 관리",buildData)),row("계정 및 보안","",()=>openPage("계정 및 보안",buildAcct))]));
-  if(MODE==="server"&&STAT)v.appendChild(group([row("로그아웃",null,doLogout,{danger:true})]))}
+  if(MODE==="server"&&STAT)v.appendChild(group([row("로그아웃",null,doLogout,{danger:true})]));
+  const vv=el("div","note","앱 버전 "+APP_VER);vv.style.textAlign="center";v.appendChild(vv)}
 /* ---- 하위 화면 ---- */
 function buildModel(b,fresh){
   if(!fresh)loadStatus().then(()=>{const s=stack[stack.length-1];if(s&&s.build===buildModel){s.body.innerHTML="";buildModel(s.body,true)}});
