@@ -49,7 +49,7 @@ nav#tabs{display:flex;border-top:1px solid var(--line);background:var(--card);pa
 html.gapfix nav#tabs{background:#150e19}
 nav#tabs button{flex:1;padding:8px 0 calc(8px + env(safe-area-inset-bottom));background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72em;color:var(--mut)}
 nav#tabs button.on{color:var(--acc-x)}
-html.gapfix nav#tabs button{padding-bottom:10px}
+html.gapfix nav#tabs button{padding:6px 0 2px}
 nav#tabs svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .bar .ttl{flex:1;text-align:center;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -86,6 +86,12 @@ textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padd
 .bar2 i{display:block;height:100%;background:var(--acc)}
 input.tx{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;background:var(--bg);color:var(--ink)}
 .wide{width:100%;padding:12px;border-radius:12px;border:0;background:var(--acc);color:var(--acc-t);font-weight:600;margin-bottom:12px}
+.probe{position:fixed;top:0;left:0;right:0;z-index:90;display:flex;flex-direction:column;background:var(--bg);padding-top:env(safe-area-inset-top)}
+.probe .ptop{display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:.85em;min-height:44px}
+.probe .ptop span{flex:1}
+.prow{flex:1;display:flex;align-items:center;padding:0 16px;border-top:1px solid rgba(255,255,255,.2);background:rgba(111,227,238,.10);font-size:.85em}
+.prow:nth-child(odd){background:rgba(255,143,163,.14)}
+.prow.hit{background:#1f8f6b}
 .page{position:fixed;inset:0;background:var(--bg);z-index:30;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
 .ph{display:flex;align-items:center;padding:10px 8px}
 .ph button{background:none;border:0;font-size:2em;line-height:1;padding:0 12px}
@@ -161,7 +167,7 @@ window.fetch=async(url,opt)=>{
 <script>
 const $=id=>document.getElementById(id);
 const APP="AI";
-const APP_VER="0.19";
+const APP_VER="0.20";
 const JH={"Content-Type":"application/json"};
 const THEME={dark:"다크 모드",light:"라이트 모드",auto:"시스템 설정"};
 const SEC="이 코드 보안 점검해줘\n```python\n\n```";
@@ -257,7 +263,8 @@ function buildTone(b){b.appendChild(el("div","sec","말투"));b.appendChild(segC
 function buildDisplay(b){b.appendChild(el("div","sec","테마"));b.appendChild(segCard([["dark","다크"],["light","라이트"],["auto","시스템"]],ST.theme,v=>{ST.theme=v;saveST();applyLook()}));
   b.appendChild(el("div","sec","글자 크기"));b.appendChild(segCard([[14,"작게"],[16,"보통"],[19,"크게"]],ST.size,v=>{ST.size=v;saveST();applyLook()}));
   b.appendChild(el("div","sec","화면"));b.appendChild(group([toggle("아래 여백 맞춤","gapfit",applyGap)]));
-  b.appendChild(el("div","note","홈 화면 앱에서 탭 바 아래에 빈 띠가 생길 때 색을 맞춰 한 덩어리로 보이게 해요."))}
+  b.appendChild(el("div","note","홈 화면 앱에서 탭 바 아래에 빈 띠가 생길 때 색을 맞춰 한 덩어리로 보이게 해요."));
+  b.appendChild(group([row("화면 진단 (터치 테스트)","",openProbe)]))}
 function buildData(b){const st=el("div","note"),ph=MODE==="phone";
   b.appendChild(group([row("저장된 대화",S.chats.length+"개"),
     row("모든 대화 삭제","",()=>{if(!confirm("모든 대화를 삭제할까요? 되돌릴 수 없어요."))return;S.chats=[];S.cur=null;save();rebuild()},{danger:true}),
@@ -340,6 +347,12 @@ function applyGap(){document.documentElement.classList.toggle("gapfix",ST.gapfit
 addEventListener("resize",applyGap);
 function diag(){const t=el("div");t.style.cssText="position:absolute;visibility:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)";document.body.appendChild(t);const c=getComputedStyle(t),s=c.paddingTop+"/"+c.paddingBottom;t.remove();
   return"화면 "+screen.width+"×"+screen.height+" · 영역 "+innerWidth+"×"+innerHeight+" · 뷰포트 "+(window.visualViewport?Math.round(visualViewport.height):"-")+" · 문서 "+document.documentElement.clientHeight+" · 안전영역 "+s+" · "+(STANDALONE?"앱":"브라우저")+" · 여백맞춤 "+(document.documentElement.classList.contains("gapfix")?"켜짐":"꺼짐")}
+function openProbe(){
+  const H=fullH(),p=el("div","probe");p.style.height=H+"px";
+  const t=el("div","ptop"),x=el("button","ib","닫기");x.type="button";x.onclick=()=>p.remove();t.append(el("span",null,"줄을 눌러 보세요. 눌리면 초록색이 돼요. 맨 아래 줄까지 눌러 본 뒤 캡처해 주세요."),x);p.appendChild(t);
+  const rows=[];for(let i=0;i<13;i++){const r=el("div","prow");r.onclick=()=>{r.classList.add("hit");r.dataset.hit="1";lab(r)};p.appendChild(r);rows.push(r)}
+  function lab(r){const b=r.getBoundingClientRect();r.textContent="y "+Math.round(b.top)+"~"+Math.round(b.bottom)+(b.bottom>innerHeight+1?"  (영역 812 밖)":"")+(r.dataset.hit?"  눌림 ✓":"")}
+  document.body.appendChild(p);requestAnimationFrame(()=>rows.forEach(lab))}
 /* ---- 시작 ---- */
 applyLook();syncCode();go("home");applyGap();
 fetch("/api/health").then(r=>r.json()).then(j=>{if(!j.authed)showLogin();else loadStatus()}).catch(()=>{STAT=null;refresh()});
